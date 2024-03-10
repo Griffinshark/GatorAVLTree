@@ -3,9 +3,8 @@
 #include <queue>
 #include "Tree.h"
 
-Tree::Tree() {}
+Tree::Tree() = default;
 
-// DONE
 Tree::~Tree()
 {
 	// If tree is not empty, make it so
@@ -19,8 +18,7 @@ Tree::~Tree()
 	}
 }
 
-// DONE
-void Tree::InsertStudent(std::string studentName, int studentId)
+void Tree::InsertStudent(const std::string& studentName, int studentId)
 {
 	// First element insert
 	if (root == nullptr)
@@ -32,7 +30,6 @@ void Tree::InsertStudent(std::string studentName, int studentId)
 	}
 
 	Student* currentNode{ root }; // Start at root
-	//Student* parent{ nullptr }; // Keep track of parent
 
 	// Loop until null child found or non-unique id is determined
 	while (true)
@@ -56,10 +53,7 @@ void Tree::InsertStudent(std::string studentName, int studentId)
 				// (parent) node
 				currentNode->leftSet(new Student(studentName, studentId, currentNode));
 
-				
-
 				// CHECK BALANCE:
-				//InsertionBalance(currentNode);
 				BalanceTree(currentNode);
 
 				nodeCount++;
@@ -81,7 +75,6 @@ void Tree::InsertStudent(std::string studentName, int studentId)
 				currentNode->rightSet(new Student(studentName, studentId, currentNode));
 
 				// CHECK BALANCE:
-				//InsertionBalance(currentNode);
 				BalanceTree(currentNode);
 
 				nodeCount++;
@@ -90,69 +83,8 @@ void Tree::InsertStudent(std::string studentName, int studentId)
 			}
 		}
 	}
-
-
-
-
-	/*
-	while (currentNode != nullptr)
-	{
-		// Check if new ID already exists
-		if (studentId == currentNode->studentIdGet())
-		{
-			std::cout << "unsuccessful\n";
-			return;
-		}
-		// Id is less than current node, go left
-		else if (studentId < currentNode->studentIdGet())
-		{
-			parent = currentNode;
-			currentNode = currentNode->leftGet();
-
-			if (currentNode == nullptr)
-			{
-				// Null reached, insert new student on left of parent node
-				parent->leftSet(new Student(studentName, studentId, parent));
-
-				// TESTING
-				std::cout << "Sending: " << parent->leftGet()->nameGet() << '\n';
-
-				InsertionBalance(parent->leftGet());
-				std::cout << "successful\n";
-			}
-		}
-		// Id is greater than current node, go right
-		else
-		{
-			parent = currentNode;
-			currentNode = currentNode->rightGet();
-			
-			if (currentNode == nullptr)
-			{
-				// Null reached, insert new student on right of parent node
-				parent->rightSet(new Student(studentName, studentId, parent));
-				
-				// TESTING
-				std::cout << "Sending: " << parent->rightGet()->nameGet() << '\n';
-
-				InsertionBalance(parent->rightGet());
-				std::cout << "successful\n";
-			}
-		}
-	}
-	*/
-
-	// Loop until null child found or non-unique id is determined
-		// Start at root
-		// Determine if new id matches current node id
-			// If yes, print "unsuccessful" and return
-		// Go left if less than current node, else go right 
-		// Once null is reached, insert student
-		
-	// Update height & check for balance from current node to root
 }
 
-// DONE*****
 void Tree::RemoveStudent(int idToRemove)
 {
 	// Edge case: deleting a lone root
@@ -210,17 +142,17 @@ void Tree::RemoveStudent(int idToRemove)
 	else if ((studentToRemove->leftGet() != nullptr)
 		&& (studentToRemove->rightGet() != nullptr))
 	{
-		// Find largest left subtree node, this will become the replacer node
+		// Find the largest left subtree node, this will become the replacer node
 		Student* replacingNode
 		{ SearchRightmostNode(studentToRemove->leftGet()) };
 
-		// Store replacingNode's parent for future use
-		Student* originalReplacingParent{ replacingNode->parentGet() };
+        // Save replacer's original parent for further down
+        Student* repOriginalParent{replacingNode->parentGet()};
 
 		// Double link studentToRemove's parent and replacer
 		if (studentToRemove->parentGet() != nullptr)
 		{
-			// Check if larger or smaller than parent
+			// Setting parent to replacer
 			if (studentToRemove->studentIdGet()
 				< studentToRemove->parentGet()->studentIdGet())
 			{
@@ -233,6 +165,7 @@ void Tree::RemoveStudent(int idToRemove)
 				studentToRemove->parentGet()->rightSet(replacingNode);
 			}
 
+            // Setting replacing node -> parent
 			replacingNode->parentSet(studentToRemove->parentGet());
 		}
 		else
@@ -240,46 +173,22 @@ void Tree::RemoveStudent(int idToRemove)
 			replacingNode->parentSet(nullptr);
 		}
 
-		// If replacing node has a left child
-		if (replacingNode->leftGet() != nullptr)
-		{
-			// Grab replacing node's original left child
-			Student* originalReplacingLeft{ replacingNode->leftGet() };
-
-			// If replacer's parent is the one being removed
-			if (studentToRemove->leftGet() == replacingNode)
-			{
-				// Do nothing, original left will stay replacer's left child
-			}
-			else
-			{
-				// Replacer's parent will double link with 
-				// replacer's original left
-				originalReplacingParent->rightSet(originalReplacingLeft);
-				originalReplacingLeft->parentSet(originalReplacingParent);
-			}
-		}
-
 		// Adjust children of studentToRemove to double link with replacer
-		// If studentToRemove has a left child
-		if (studentToRemove->leftGet() != nullptr)
-		{
-			// If replacer is the immediate left child of studentToRemove
-			if (studentToRemove->leftGet() == replacingNode)
-			{
-				// Do nothing
-			}
-			else
-			{
-				replacingNode->leftSet(studentToRemove->leftGet());
-			}
-		}
-		// If studentToRemove has a right child
-		if (studentToRemove->rightGet() != nullptr)
-		{
-			replacingNode->rightSet(studentToRemove->rightGet());
-			replacingNode->rightGet()->parentSet(replacingNode);
-		}
+        // If replacer is the immediate left child of studentToRemove
+        if (studentToRemove->leftGet() == replacingNode)
+        {
+            // Do nothing
+        }
+        else
+        {
+            // Set replacer's original parent to it's left child, null or not
+            repOriginalParent->rightSet(replacingNode->leftGet());
+
+            replacingNode->leftSet(studentToRemove->leftGet());
+            replacingNode->leftGet()->parentSet(replacingNode);
+        }
+        replacingNode->rightSet(studentToRemove->rightGet());
+        replacingNode->rightGet()->parentSet(replacingNode);
 
 		// If "student to delete" was the root, set root to replacer
 		if (studentToRemove == root) { root = replacingNode; }
@@ -303,61 +212,6 @@ void Tree::RemoveStudent(int idToRemove)
 		// Print success and return
 		std::cout << "successful\n";
 		return;
-
-		/*
-		// Take original parent of replacing node
-		// Set it's right child to the replacing node's left child
-		replacingNode->parentGet()->rightSet(origReplacingLeft);
-		// Set that child to point back to it's new parent, if child exists
-		if (origReplacingLeft != nullptr) 
-		{ origReplacingLeft->parentSet(replacingNode->parentGet()); }
-		
-
-		// Now, Set replacing node's parent to student to remove's parent
-		replacingNode->parentSet(studentToRemove->parentGet());
-		// Make parent of "student to remove" point to replacer
-		if (studentToRemove->parentGet() != nullptr)
-		{
-			// Check if larger or smaller than parent
-			if (studentToRemove->studentIdGet()
-				< studentToRemove->parentGet()->studentIdGet())
-			{
-				// Smaller than parent, set parent left to replacing node
-				studentToRemove->parentGet()->leftSet(replacingNode);
-			}
-			else
-			{
-				// Larger than parent, set parent left to replacing node
-				studentToRemove->parentGet()->rightSet(replacingNode);
-			}
-		}
-
-		// Set replacing node's children to "student to remove's" children
-		replacingNode->leftSet(studentToRemove->leftGet());
-		replacingNode->rightSet(studentToRemove->rightGet());
-		// Set those children to point back to replacing node, if they exist
-		if (studentToRemove->leftGet() != nullptr)
-		{ studentToRemove->leftGet()->parentSet(replacingNode); }
-		if (studentToRemove->rightGet() != nullptr)
-		{ studentToRemove->rightGet()->parentSet(replacingNode); }
-
-		// Check nodes to root for height/bal.
-		// If origReplacingLeft isn't null, start there
-		if (origReplacingLeft != nullptr) { BalanceTree(origReplacingLeft); }
-		// Start at student to remove
-		else { BalanceTree(studentToRemove); }
-		
-		// If "student to delete" was the root, set root to replacer
-		if (studentToRemove == root) { root = replacingNode; }
-
-		// Free memory, nullify pointer
-		delete studentToRemove;
-		studentToRemove = nullptr;
-
-		// Print success and return
-		std::cout << "successful\n";
-		return;
-		*/
 	}
 	// Student has only left child
 	else if ((studentToRemove->leftGet() != nullptr)
@@ -439,7 +293,6 @@ void Tree::RemoveStudent(int idToRemove)
 	}
 }
 
-// DONE
 Student* Tree::SearchId(int idToSearch)
 {
 	// Start at the root
@@ -490,7 +343,6 @@ Student* Tree::SearchId(int idToSearch)
 	return nullptr;
 }
 
-// DONE
 Student* Tree::SearchRightmostNode(Student* _root)
 {
 	Student* rightmostNode{nullptr};
@@ -507,8 +359,7 @@ Student* Tree::SearchRightmostNode(Student* _root)
 	return rightmostNode;
 }
 
-// DONE
-void Tree::SearchName(std::string nameToFind, Student* _root,
+void Tree::SearchName(const std::string& nameToFind, Student* _root,
 	std::vector<int>& foundMatches)
 {
 	// If _root is null, nothing in this position, return
@@ -536,7 +387,6 @@ void Tree::SearchName(std::string nameToFind, Student* _root,
 	}
 }
 
-// DONE
 void Tree::printInorder(Student* _root, Student* stoppingNode)
 {
 	// Subtree root doesn't exist, happens if tree is empty
@@ -569,11 +419,8 @@ void Tree::printInorder(Student* _root, Student* stoppingNode)
 	{
 		printInorder(_root->rightGet(), stoppingNode);
 	}
-
-	return;
 }
 
-// DONE
 void Tree::printPreorder(Student* _root, Student* stoppingNode)
 {
 	// Subtree root doesn't exist, happens if tree is empty
@@ -617,54 +464,8 @@ void Tree::printPreorder(Student* _root, Student* stoppingNode)
 	{
 		printPreorder(_root->rightGet(), stoppingNode);
 	}
-
-	return;
-
-
-	/*
-	// Subtree root doesn't exist, return
-	if (_root == nullptr)
-	{
-		std::cout << "unsuccessful\n";
-		return;
-	}
-
-	// Print the subtree root
-	std::cout << _root->nameGet();
-
-	// If either children exist we need a comma and to check further
-	if ((_root->leftGet() != nullptr) || (_root->rightGet() != nullptr))
-	{
-		std::cout << ", ";
-	}
-	// No further nodes to check
-	else
-	{
-		return;
-	}
-	
-	// If left exists, recurse left
-	if (_root->leftGet() != nullptr)
-	{
-		printPreorder(_root->leftGet());
-	}
-
-	// If both children exist we need another comma
-	if ((_root->leftGet() != nullptr) && (_root->rightGet() != nullptr))
-	{
-		std::cout << ", ";
-	}
-
-	// If right exists, recurse right
-	if (_root->rightGet() != nullptr)
-	{
-		printPreorder(_root->rightGet());
-	}
-
-	return;*/
 }
 
-// DONE
 void Tree::printPostorder(Student* _root)
 {
 	// Subtree root doesn't exist, return
@@ -688,11 +489,8 @@ void Tree::printPostorder(Student* _root)
 	// Print the subtree root, if/else for comma placement
 	if (_root == root) { std::cout << _root->nameGet() << '\n'; }
 	else { std::cout << _root->nameGet() << ", "; }
-	
-	return;
 }
 
-// DONE
 void Tree::printLevelCount()
 {
 	if (root != nullptr)
@@ -700,13 +498,13 @@ void Tree::printLevelCount()
 		// 1-based level count
 		std::cout << root->heightGet() << '\n';
 	}
+    // Tree is empty
 	else
 	{
-		std::cout << "unsuccessful\n";
+		std::cout << 0 << '\n';
 	}
 }
 
-// DONE
 Student* Tree::accessNthStudent(Student* _root, int& counter, int& n) 
 {
 	Student* nthStudent{ nullptr };
@@ -735,7 +533,6 @@ Student* Tree::accessNthStudent(Student* _root, int& counter, int& n)
 	return nthStudent;
 }
 
-// DONE*
 void Tree::removeInorder(int n)
 {
 	// Index must be positive
@@ -753,240 +550,8 @@ void Tree::removeInorder(int n)
 
 	// Remove them
 	RemoveStudent(nthStudent->studentIdGet());
-	nodeCount--;
 }
 
-// DO I STILL NEED THIS????
-void Tree::InsertionBalance(Student* parent)
-{
-	// Start at parent node
-
-	// Loop:
-		// Update height if needed
-		// Grab left and right height
-		// calculate balance and store according to "i"
-		// rotate if needed
-			// exit loop
-		// ++i & currentNode move to parent
-
-	Student* currentNode{ parent };
-	size_t rightHeight{ 0 };
-	size_t leftHeight{ 0 };
-	int firstBalance{ 0 };
-	int secondBalance{ 0 };
-	int i{ 0 };
-
-	while (currentNode != nullptr)
-	{
-		// Grab left child's height
-		if (currentNode->leftGet() != nullptr)
-		{
-			leftHeight = static_cast<int>(currentNode->leftGet()->heightGet());
-		}
-		else
-		{
-			leftHeight = 0;
-		}
-		
-		// Grab right child's height
-		if (currentNode->rightGet() != nullptr)
-		{
-			rightHeight = static_cast<int>(currentNode->rightGet()->heightGet());
-		}
-		else
-		{
-			rightHeight = 0;
-		}
-
-		// Update height of node:
-		if ((currentNode->heightGet() == rightHeight) ||
-			(currentNode->heightGet() == leftHeight))
-		{
-			currentNode->heightSet(currentNode->heightGet() + 1);
-		}
-		else
-		{
-			// Do not update height of current node
-		}
-
-		// Calculate node balance
-		if (i == 0) 
-		{ 
-			firstBalance = (rightHeight - leftHeight);
-
-			// TESTING:
-			//std::cout << "firstBalance: " << currentNode->nameGet() << " : " << firstBalance << '\n';
-
-			i++;
-		}
-		else if (i == 1)
-		{
-			secondBalance = (rightHeight - leftHeight);
-
-			// TESTING:
-			//std::cout << "secondBalance: " << currentNode->nameGet() << " : " << secondBalance << '\n';
-
-			i--;		
-		}
-		else
-		{
-			std::cout << "Error: Balance Calculation\n";
-		}
-
-		if (abs(firstBalance) > 1)
-		{
-			if (firstBalance == -2)
-			{
-				if (secondBalance == -1)
-				{
-					// Left-Left Imbalance: Right Rot.
-					std::cout << "Left-Left Imbalance: Right Rot.\n";
-					RightRotation(currentNode->leftGet());
-
-					// Adjust height of original parent
-					currentNode->heightSet(currentNode->heightGet() - 2);
-				}
-				else if (secondBalance == 1)
-				{
-					// Left-Right Imbalance: Left-Right Rot.
-					std::cout << "Left-Right Imbalance: Left-Right Rot.\n";
-					LeftRotation(currentNode->leftGet()->rightGet());
-					// Adjust heights d/t rotational change
-					currentNode->leftGet()->leftGet()->heightDec();
-					currentNode->leftGet()->heightInc();
-
-					RightRotation(currentNode->leftGet());
-					// Adjust heights d/t rotational change
-					currentNode->heightDec();
-					currentNode->heightDec();
-				}
-				else
-				{
-					std::cout << "Error: Balance Calculation 1\n";
-				}
-			}
-			else if (firstBalance == 2)
-			{
-				if (secondBalance == -1)
-				{
-					// Right-Left Imbalance: Right-Left Rot.
-					std::cout << "Right-Left Imbalance: Right-Left Rot.\n";
-					RightRotation(currentNode->rightGet()->leftGet());
-					// Adjust heights d/t rotational change
-					currentNode->rightGet()->rightGet()->heightDec();
-					currentNode->rightGet()->heightInc();
-
-					LeftRotation(currentNode->rightGet());
-					// Adjust heights d/t rotational change
-					currentNode->heightDec();
-					currentNode->heightDec();
-				}
-				else if (secondBalance == 1)
-				{
-					// Right-Right Imbalance: Left Rot.
-					std::cout << "Right-Right Imbalance: Left Rot.\n";
-					LeftRotation(currentNode->rightGet());
-
-					// Adjust height of original parent
-					currentNode->heightSet(currentNode->heightGet() - 2);
-				}
-				else
-				{
-					std::cout << "Error: Balance Calculation 2\n";
-				}
-			}
-			else
-			{
-				std::cout << "Error: Balance Calculation 3\n";
-			}
-
-			// Balanced, so, reset balances
-			firstBalance = 0;
-			secondBalance = 0;
-
-			// Adjust currentNode to account for rotational changes
-			currentNode = currentNode->parentGet();
-		}
-		else if (abs(secondBalance) > 1)
-		{
-			if (secondBalance == -2)
-			{
-				if (firstBalance == -1)
-				{
-					// Left-Left Imbalance: Right Rot.
-					std::cout << "Left-Left Imbalance: Right Rot.\n";
-					RightRotation(currentNode->leftGet());
-
-					// Adjust height of original parent
-					currentNode->heightSet(currentNode->heightGet() - 2);
-				}
-				else if (firstBalance == 1)
-				{
-					// Left-Right Imbalance: Left-Right Rot.
-					std::cout << "Left-Right Imbalance: Left-Right Rot.\n";
-					LeftRotation(currentNode->leftGet()->rightGet());
-					// Adjust heights d/t rotational change
-					currentNode->leftGet()->leftGet()->heightDec();
-					currentNode->leftGet()->heightInc();
-
-					RightRotation(currentNode->leftGet());
-					// Adjust heights d/t rotational change
-					currentNode->heightDec();
-					currentNode->heightDec();
-				}
-				else
-				{
-					std::cout << "Error: Balance Calculation 4\n";
-				}
-			}
-			else if (secondBalance == 2)
-			{
-				if (firstBalance == -1)
-				{
-					// Right-Left Imbalance: Right-Left Rot.
-					std::cout << "Right-Left Imbalance: Right-Left Rot.\n";
-					RightRotation(currentNode->rightGet()->leftGet());
-					// Adjust heights d/t rotational change
-					currentNode->rightGet()->rightGet()->heightDec();
-					currentNode->rightGet()->heightInc();
-
-					LeftRotation(currentNode->rightGet());
-					// Adjust heights d/t rotational change
-					currentNode->heightDec();
-					currentNode->heightDec();
-				}
-				else if (firstBalance == 1)
-				{
-					// Right-Right Imbalance: Left Rot.
-					std::cout << "Right-Right Imbalance: Left Rot.\n";
-					LeftRotation(currentNode->rightGet());
-
-					// Adjust height of original parent
-					currentNode->heightSet(currentNode->heightGet() - 2);
-				}
-				else
-				{
-					std::cout << "Error: Balance Calculation 5\n";
-				}
-			}
-			else
-			{
-				std::cout << "Error: Balance Calculation 6\n";
-			}
-
-			// Balanced, so, reset balances
-			firstBalance = 0;
-			secondBalance = 0;
-
-			// Adjust currentNode to account for rotational changes
-			currentNode = currentNode->parentGet();
-		}
-
-		currentNode = currentNode->parentGet();
-	}
-}
-
-// DONE*
 void Tree::BalanceTree(Student* parent)
 {
 	Student* currentNode{ parent };
@@ -1041,7 +606,7 @@ void Tree::BalanceTree(Student* parent)
 		}
 
 		// Calculate balance
-		balance = (rightHeight - leftHeight);
+		balance = static_cast<int>(rightHeight - leftHeight);
 
 		// Imbalance found
 		if (abs(balance) > 1)
@@ -1057,23 +622,14 @@ void Tree::BalanceTree(Student* parent)
 				{
 					// Left-Left Imbalance: Right Rot.
 					RightRotation(currentNode->leftGet());
-
-					// Adjust height of original parent
-					//currentNode->heightSet(currentNode->heightGet() - 2);
 				}
 				// Left child balance right leaning
 				else if (leftChildBalance == 1)
 				{
 					// Left-Right Imbalance: Left-Right Rot.
 					LeftRotation(currentNode->leftGet()->rightGet());
-					// Adjust heights d/t rotational change
-					//currentNode->leftGet()->leftGet()->heightDec();
-					//currentNode->leftGet()->heightInc();
 
 					RightRotation(currentNode->leftGet());
-					// Adjust heights d/t rotational change
-					//currentNode->heightDec();
-					//currentNode->heightDec();
 				}
 				else
 				{
@@ -1097,9 +653,6 @@ void Tree::BalanceTree(Student* parent)
 				{
 					// Right-Left Imbalance: Right-Left Rot.
 					RightRotation(currentNode->rightGet()->leftGet());
-					// Adjust heights d/t rotational change
-					//currentNode->rightGet()->rightGet()->heightDec();
-					//currentNode->rightGet()->heightInc();
 
 					LeftRotation(currentNode->rightGet());
 				}
@@ -1130,7 +683,6 @@ void Tree::BalanceTree(Student* parent)
 	}
 }
 
-// DONE
 void Tree::RightRotation(Student* nodeToRotate)
 {
 	Student* temp{ nullptr };
@@ -1194,7 +746,6 @@ void Tree::RightRotation(Student* nodeToRotate)
     QuickHeightUpdate(originalParent);
 }
 
-// DONE
 void Tree::LeftRotation(Student* nodeToRotate)
 {
 	Student* temp{ nullptr };
@@ -1258,7 +809,6 @@ void Tree::LeftRotation(Student* nodeToRotate)
 	QuickHeightUpdate(originalParent);
 }
 
-// DONE
 int Tree::QuickBalanceGrab(Student* nodeToCheck)
 {
 	int rightChildHeight{ 0 };
@@ -1280,7 +830,6 @@ int Tree::QuickBalanceGrab(Student* nodeToCheck)
 	return (rightChildHeight - leftChildHeight);
 }
 
-// DONE
 void Tree::QuickHeightUpdate(Student* startingNode)
 {
 	size_t rightHeight{ 0 };
@@ -1335,7 +884,6 @@ void Tree::QuickHeightUpdate(Student* startingNode)
 	}
 }
 
-// DONE
 void Tree::EmptyTree(Student* _root)
 {
 	// If left exists, go left to further delete, then, nullify left
@@ -1355,22 +903,17 @@ void Tree::EmptyTree(Student* _root)
 	// Now, delete node and nullify _root
 	delete _root;
 	_root = nullptr;
-
-	return;
 }
 
-// DONE
 Student* Tree::GetRoot() { return root; }
 
-// DONE
-size_t Tree::GetNodeCount() { return nodeCount; }
+size_t Tree::GetNodeCount() const { return nodeCount; }
 
 void Tree::InOrderTester(Student* _root, std::vector<int>& nodes)
 {
     // Subtree root doesn't exist, happens if tree is empty
     if (_root == nullptr)
     {
-        std::cout << "unsuccessful\n";
         return;
     }
 
@@ -1387,6 +930,4 @@ void Tree::InOrderTester(Student* _root, std::vector<int>& nodes)
     {
         InOrderTester(_root->rightGet(), nodes);
     }
-
-    return;
 }

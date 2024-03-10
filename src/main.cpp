@@ -19,14 +19,15 @@ int main()
     size_t commandsNum{ 0 };
     std::cin >> commandsNum;
 
-    if (commandsNum < 1) // They may want something different here
+    // Checks if commands number is appropriate
+    if ((commandsNum < 1) || (commandsNum > 1000))
     {
-        std::cout << "Commands must be 1 or greater\n";
+        std::cout << "unsuccessful\n";
         commandsNum = 0;
     }
 
-    std::string currentCommand{ "" }; // Stores the current command
-    std::cin.ignore(); // Flush cin buffer for getline command
+    std::string currentCommand; // Stores the current command
+    std::cin.ignore(); // Flush cin buffer for get-line command
 
     Tree* ourTree = new Tree(); // Create the tree
 
@@ -38,8 +39,8 @@ int main()
         // insert NAME ID
         if (currentCommand.substr(0, 8) == "insert \"")
         {
-            std::string studentName{ "" };
-            std::string studentId{ "" };
+            std::string studentName;
+            std::string studentId;
 
             // Grab student name
             std::stringstream commandStream{ currentCommand.substr(8) };
@@ -48,6 +49,13 @@ int main()
             bool nameCheck = NameChecker(studentName);
 
             if (!nameCheck)
+            {
+                std::cout << "unsuccessful\n";
+                continue;
+            }
+
+            // Check something follows name
+            if (!(currentCommand.substr(7 + studentName.length()).length() >= 3))
             {
                 std::cout << "unsuccessful\n";
                 continue;
@@ -91,7 +99,7 @@ int main()
         else if (currentCommand.substr(0, 8) == "search \"")
         {
             // Grab student name to search for
-            std::string nameToFind{ "" };
+            std::string nameToFind;
             std::stringstream commandStream{ currentCommand.substr(8) };
             std::getline(commandStream, nameToFind, '\"');
             // Run name checks
@@ -157,19 +165,43 @@ int main()
         // printInorder
         else if (currentCommand == "printInorder")
         {
-            ourTree->printInorder(ourTree->GetRoot(), 
-                ourTree->SearchRightmostNode(ourTree->GetRoot()));
+            // Check if tree has nodes
+            if (ourTree->GetRoot() != nullptr)
+            {
+                ourTree->printInorder(ourTree->GetRoot(),
+                                      ourTree->SearchRightmostNode(ourTree->GetRoot()));
+            }
+            else
+            {
+                // Do nothing
+            }
         }
         // printPreorder
         else if (currentCommand == "printPreorder")
         {
-            ourTree->printPreorder(ourTree->GetRoot(),
-                ourTree->SearchRightmostNode(ourTree->GetRoot()));
+            // Check if tree has nodes
+            if (ourTree->GetRoot() != nullptr)
+            {
+                ourTree->printPreorder(ourTree->GetRoot(),
+                                       ourTree->SearchRightmostNode(ourTree->GetRoot()));
+            }
+            else
+            {
+                // Do nothing
+            }
         }
         // printPostorder
         else if (currentCommand == "printPostorder")
         {
-            ourTree->printPostorder(ourTree->GetRoot());
+            // Check if tree has nodes
+            if (ourTree->GetRoot() != nullptr)
+            {
+                ourTree->printPostorder(ourTree->GetRoot());
+            }
+            else
+            {
+                // Do nothing
+            }
         }
         // printLevelCount
         else if (currentCommand == "printLevelCount")
@@ -203,64 +235,6 @@ int main()
                 std::cout << "unsuccessful\n";
                 continue;
             }
-        }
-        // TESTING
-        else if (currentCommand == "testing1")
-        {
-            ourTree->InsertStudent("Steve", 9);
-            ourTree->InsertStudent("Tom", 12);
-            ourTree->InsertStudent("Joey", 7);
-            ourTree->InsertStudent("Hunter", 16);
-            ourTree->InsertStudent("John", 14);
-            //ourTree->InsertStudent("Sam", 16);
-        }
-        else if (currentCommand == "testing2")
-        {
-            ourTree->InsertStudent("Steve", 75);
-            ourTree->InsertStudent("Tom", 89);
-            ourTree->InsertStudent("Joey", 13);
-            ourTree->InsertStudent("Hunter", 7);
-            ourTree->InsertStudent("John", 95);
-            ourTree->InsertStudent("Sam", 45);
-            ourTree->InsertStudent("Uncle", 37);
-        }
-        else if (currentCommand == "testing3")
-        {
-            ourTree->InsertStudent("Steve", 10293847);
-            ourTree->InsertStudent("Tom", 29384728);
-            ourTree->InsertStudent("Joey", 10392039);
-            ourTree->InsertStudent("Hunter", 29586738);
-            ourTree->InsertStudent("John", 48522990);
-            ourTree->InsertStudent("Jacob", 99302493);
-            ourTree->InsertStudent("Uncle", 83728394);
-        }
-        else if (currentCommand == "testing4")
-        {
-            ourTree->InsertStudent("Brandon", 45674567);
-            ourTree->InsertStudent("Brian", 35455565);
-            ourTree->InsertStudent("Briana", 87878787);
-            ourTree->InsertStudent("Bella", 95462138);
-        }
-        else if (currentCommand == "testingLR")
-        {
-            ourTree->InsertStudent("Steve", 44958256);
-            ourTree->InsertStudent("Tom", 87878787);
-            ourTree->InsertStudent("Joey", 99999999);
-
-            ourTree->printInorder(ourTree->GetRoot(),
-                ourTree->SearchRightmostNode(ourTree->GetRoot()));
-
-            ourTree->InsertStudent("Hunter", 16344444);
-
-            ourTree->RemoveStudent(99999999);
-
-            ourTree->printInorder(ourTree->GetRoot(),
-                ourTree->SearchRightmostNode(ourTree->GetRoot()));
-
-            ourTree->RemoveStudent(44958256);
-
-            ourTree->printInorder(ourTree->GetRoot(),
-                ourTree->SearchRightmostNode(ourTree->GetRoot()));
         }
         else
         {
@@ -332,12 +306,4 @@ bool NCheck(std::string n)
     // All checks passed
     return true;
 }
-
-// TESTS
-// Removal at root (Yes!)
-// Left Rotation (Yes!)
-
-// TODO:
-// Adjust functions in public to private for Tree and Student
-// See where to pass references or pointers instead of copying
 
