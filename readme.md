@@ -8,7 +8,7 @@ Simply clone the repo and run from main.
 1. Enter the number of commands to input
 2. Enter commands
 
-**Available Commands:***
+**Available Commands:**
 - insert NAME ID: Adds a student with their 8-digit ID number
 - remove ID: Remove the ID from the tree
 - search ID: Search for a student by their ID
