@@ -1,5 +1,5 @@
 # Introduction
-This is a project that was designed as an AVL (Self-Balancing Binary Search Tree) for organizing UF student account based on an ID number. 
+This is a project that was designed as an AVL (Self-Balancing Binary Search Tree) for organizing UF student accounts based on an ID number. 
 
 # Installation
 Simply clone the repo and run from main.
